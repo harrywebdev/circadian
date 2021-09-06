@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
 class LogCircadian extends Command
@@ -11,14 +12,14 @@ class LogCircadian extends Command
      *
      * @var string
      */
-    protected $signature = 'command:name';
+    protected $signature = 'circadian:log';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Log Circadian';
 
     /**
      * Create a new command instance.
@@ -37,6 +38,22 @@ class LogCircadian extends Command
      */
     public function handle()
     {
+        $this->line('Welcome to Circadian.');
+
+        $date = $this->anticipate('What date you have in mind?',
+            ['today', 'yesterday', CarbonImmutable::now()->format('Y-m-d')]);
+
+        try {
+            $date = new CarbonImmutable($date);
+        } catch (\Exception $e) {
+            $this->error('I did not recognize that as a date. Please, try again.');
+            return $this->handle();
+        }
+
+        $this->line('We\'re talking ' . $date->format('l jS F') . ' then. Alright, let me check.');
+
+        
+
         return 0;
     }
 }
