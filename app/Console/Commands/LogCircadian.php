@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Daylog;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
@@ -52,8 +53,48 @@ class LogCircadian extends Command
 
         $this->line('We\'re talking ' . $date->format('l jS F') . ' then. Alright, let me check.');
 
-        
+        $existingRecord = Daylog::where('date', '=', $date->format('Y-m-d'))->first();
+        if ($existingRecord) {
+            $this->info('I\'ve found a record for this date.');
+            $this->printTable($existingRecord);
+            $action = $this->choice('What would you like to do?', ['fill in blanks', 'start over', 'quit']);
+
+            $this->line('Action chosen: ' . $action);
+            $this->line('Goodbye.');
+        } else {
+            $this->info('Looks like I don\'t have a record for this date.');
+            $action = $this->choice('What would you like to do?', ['create record', 'quit']);
+
+            $this->line('Action chosen: ' . $action);
+            $this->line('Goodbye.');
+        }
 
         return 0;
+    }
+
+    private function printTable($existingRecord)
+    {
+        $this->table(
+            [
+                'Date',
+                'Woke up at',
+                'First meal at',
+                'Last meal at',
+                'Went to bed at',
+                'Any alcohol?',
+                'Alcohol in the evening?',
+                'Any smokes?',
+            ],
+            $existingRecord->all([
+                'log_date',
+                'wake_at',
+                'first_meal_at',
+                'last_meal_at',
+                'sleep_at',
+                'has_alcohol',
+                'has_alcohol_in_evening',
+                'has_smoked',
+            ])->toArray()
+        );
     }
 }
