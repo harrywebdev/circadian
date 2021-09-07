@@ -171,10 +171,10 @@ class LogCircadian extends Command
 
         $questions = array_slice(self::MODEL_FIELDS, 1);
 
-        foreach ($questions as $field => $question) {
+        foreach ($questions as $question) {
             $answer = $this->ask($question['label'] . '? (leave empty to skip)');
             if ($answer != '') {
-                $daylog->{$field} = $this->transformAnswer($answer, $question);
+                $daylog->{$question['field']} = $this->transformAnswer($answer, $question);
             }
         }
 
