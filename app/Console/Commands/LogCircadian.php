@@ -56,7 +56,7 @@ class LogCircadian extends Command
     {
         $this->newLine();
         $this->line('=====================');
-        $this->line('Welcome to Circadian.');
+        $this->line('<fg=cyan>Welcome to Circadian.</>');
         $this->line('=====================');
         $this->newLine();
 
@@ -140,7 +140,7 @@ class LogCircadian extends Command
                         $item[$mapping['field']] = 'n/a';
                         break;
                     case gettype($field) === 'boolean':
-                        $item[$mapping['field']] = $field ? 'yes' : 'no';
+                        $item[$mapping['field']] = $field ? '<fg=red>yes</>' : '<fg=green>no</>';
                         break;
                     default:
                         $item[$mapping['field']] = $field;
