@@ -26,6 +26,7 @@ class LogCircadian extends Command
     const STEP_CREATE_RECORD = 'create record';
     const STEP_FILL_IN_BLANKS = 'fill in blanks';
     const STEP_START_OVER = 'start over';
+    const STEP_PICK_ANOTHER_DATE = 'pick another date';
     const STEP_QUIT = 'quit';
 
     const MODEL_FIELDS = [
@@ -91,6 +92,10 @@ class LogCircadian extends Command
             case self::STEP_QUIT:
                 return $this->quit();
 
+            case self::STEP_PICK_ANOTHER_DATE:
+                $this->date = null;
+                return $this->handle();
+
             case self::STEP_CREATE_RECORD:
                 return $this->createRecord();
 
@@ -113,6 +118,7 @@ class LogCircadian extends Command
     private function quit()
     {
         $this->info('Alright then. Goodbye.');
+        $this->newLine();
         return 0;
     }
 
@@ -264,6 +270,7 @@ class LogCircadian extends Command
      */
     private function dateIsSet()
     {
+        $this->newLine();
         $this->line('We\'re talking ' . $this->date->format('l jS F') . ' then. Alright, let me check.');
         $this->newLine();
 
@@ -273,7 +280,7 @@ class LogCircadian extends Command
             $this->info('I\'ve found a record for this date.');
             $this->printTable([$existingRecord]);
 
-            $options = [self::STEP_START_OVER, self::STEP_QUIT];
+            $options = [self::STEP_START_OVER, self::STEP_PICK_ANOTHER_DATE, self::STEP_QUIT];
             if (!$existingRecord->isComplete) {
                 array_unshift($options, self::STEP_FILL_IN_BLANKS);
             }
@@ -283,7 +290,8 @@ class LogCircadian extends Command
             return $this->goToNextStep($action, $existingRecord);
         } else {
             $this->info('Looks like I don\'t have a record for this date.');
-            $action = $this->choice('What would you like to do?', [self::STEP_CREATE_RECORD, self::STEP_QUIT], 0);
+            $action = $this->choice('What would you like to do?',
+                [self::STEP_CREATE_RECORD, self::STEP_PICK_ANOTHER_DATE, self::STEP_QUIT], 0);
 
             return $this->goToNextStep($action);
         }
