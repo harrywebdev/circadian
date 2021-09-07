@@ -205,10 +205,20 @@ class LogCircadian extends Command
 
         $questions = array_slice(self::MODEL_FIELDS, 1);
 
+        $skipQuestions = [];
         foreach ($questions as $question) {
+            if (in_array($question['field'], $skipQuestions)) {
+                continue;
+            }
+
             $answer = $this->ask($question['label'] . '? (leave empty to skip)');
             if ($answer != '') {
                 $daylog->{$question['field']} = $this->transformAnswer($answer, $question);
+
+                // HACK: no alcohol - we don't have to ask about alcohol in the evening
+                if ($question['field'] === 'has_alcohol' && $daylog->{$question['field']} === false) {
+                    $skipQuestions[] = 'has_alcohol_in_evening';
+                }
             }
         }
 
