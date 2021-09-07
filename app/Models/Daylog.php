@@ -6,6 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * Class Daylog
+ *
+ * @package App\Models
+ * @property boolean $isComplete
+ */
 class Daylog extends Model
 {
     use HasFactory;
@@ -41,5 +47,18 @@ class Daylog extends Model
         'log_date'               => 'date',
     ];
 
-
+    /**
+     * @return bool
+     */
+    public function getIsCompleteAttribute()
+    {
+        return $this->log_date &&
+            $this->sleep_at !== null &&
+            $this->last_meal_at !== null &&
+            $this->first_meal_at !== null &&
+            $this->wake_at !== null &&
+            $this->has_smoked !== null &&
+            $this->has_alcohol_in_evening !== null &&
+            $this->has_alcohol !== null;
+    }
 }
