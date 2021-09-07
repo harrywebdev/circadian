@@ -22,15 +22,15 @@ class LogCircadian extends Command
      */
     protected $description = 'Log Circadian';
 
-    const MAPPING = [
-        'log_date'               => ['label' => 'Date', 'type' => 'date'],
-        'wake_at'                => ['label' => 'Woke up at', 'type' => 'time'],
-        'first_meal_at'          => ['label' => 'First meal at', 'type' => 'time'],
-        'last_meal_at'           => ['label' => 'Last meal at', 'type' => 'time'],
-        'sleep_at'               => ['label' => 'Went to bed at', 'type' => 'time'],
-        'has_alcohol'            => ['label' => 'Any alcohol', 'type' => 'boolean'],
-        'has_alcohol_in_evening' => ['label' => 'Alcohol in the evening', 'type' => 'boolean'],
-        'has_smoked'             => ['label' => 'Any smokes', 'type' => 'boolean'],
+    const MODEL_FIELDS = [
+        ['field' => 'log_date', 'label' => 'Date', 'type' => 'date'],
+        ['field' => 'wake_at', 'label' => 'Woke up at', 'type' => 'time'],
+        ['field' => 'first_meal_at', 'label' => 'First meal at', 'type' => 'time'],
+        ['field' => 'last_meal_at', 'label' => 'Last meal at', 'type' => 'time'],
+        ['field' => 'sleep_at', 'label' => 'Went to bed at', 'type' => 'time'],
+        ['field' => 'has_alcohol', 'label' => 'Any alcohol', 'type' => 'boolean'],
+        ['field' => 'has_alcohol_in_evening', 'label' => 'Alcohol in the evening', 'type' => 'boolean'],
+        ['field' => 'has_smoked', 'label' => 'Any smokes', 'type' => 'boolean'],
     ];
     /**
      * @var CarbonImmutable
@@ -76,7 +76,7 @@ class LogCircadian extends Command
         $existingRecord = Daylog::where('log_date', '=', $this->date->format('Y-m-d H:i:s'))->first();
         if ($existingRecord) {
             $this->info('I\'ve found a record for this date.');
-            $this->printTable($existingRecord);
+            $this->printTable([$existingRecord]);
             $action = $this->choice('What would you like to do?', ['fill in blanks', 'start over', 'quit'], 0);
 
             return $this->goToNextStep($action);
@@ -118,15 +118,44 @@ class LogCircadian extends Command
     }
 
     /**
-     * @param Daylog $existingRecord
+     * @param array $records
      */
-    private function printTable(Daylog $existingRecord)
+    private function printTable(array $records)
     {
+        // transform records to printable rows (of pure arrays)
+        $records = collect($records)->map(function (Daylog $daylog) {
+            return collect(self::MODEL_FIELDS)->reduce(function (array $item, array $mapping) use ($daylog) {
+                $field = $daylog->{$mapping['field']};
+                switch (true) {
+                    case $field instanceof CarbonImmutable:
+                        // format time only
+                        if (preg_match('/_at$/', $mapping['field'])) {
+                            $item[$mapping['field']] = $field->format('H:i');
+                            break;
+                        }
+
+                        $item[$mapping['field']] = $field->format('j. n. Y');
+                        break;
+                    case $field === null:
+                        $item[$mapping['field']] = 'n/a';
+                        break;
+                    case gettype($field) === 'boolean':
+                        $item[$mapping['field']] = $field ? 'yes' : 'no';
+                        break;
+                    default:
+                        $item[$mapping['field']] = $field;
+                        break;
+                }
+
+                return $item;
+            }, []);
+        });
+
         $this->table(
-            collect(array_values(self::MAPPING))->map(function ($item) {
+            collect(array_values(self::MODEL_FIELDS))->map(function ($item) {
                 return $item['label'];
             })->toArray(),
-            [$existingRecord->only(array_keys(self::MAPPING))]
+            $records
         );
     }
 
@@ -140,7 +169,7 @@ class LogCircadian extends Command
         $daylog           = new Daylog();
         $daylog->log_date = $this->date;
 
-        $questions = array_slice(self::MAPPING, 1);
+        $questions = array_slice(self::MODEL_FIELDS, 1);
 
         foreach ($questions as $field => $question) {
             $answer = $this->ask($question['label'] . '? (leave empty to skip)');
@@ -151,7 +180,7 @@ class LogCircadian extends Command
 
         $this->info('Perfect! Have a look-see before saving.');
 
-        $this->printTable($daylog);
+        $this->printTable([$daylog]);
         $choice = $this->choice('Happy to keep?', ['save', 'discard'], 0);
 
         if ($choice == 'save') {
@@ -178,7 +207,7 @@ class LogCircadian extends Command
             case 'boolean':
                 return preg_match('/yes|y/', $answer) ? true : (preg_match('/no|n/', $answer) ? false : null);
             case 'time':
-                if (!preg_match('/([0-9]{2}):([0-9]{2})/', $answer, $matches)) {
+                if (!preg_match('/([0-9]{1,2}):([0-9]{1,2})/', $answer, $matches)) {
                     return null;
                 }
 
