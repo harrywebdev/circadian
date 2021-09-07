@@ -89,12 +89,15 @@ class LogCircadian extends Command
     private function goToNextStep(string $action, Daylog $currentDaylog = null)
     {
         switch ($action) {
-            case self::STEP_QUIT:
-                return $this->quit();
+            case self::STEP_DATE_IS_SET:
+                return $this->dateIsSet();
 
             case self::STEP_PICK_ANOTHER_DATE:
                 $this->date = null;
                 return $this->handle();
+
+            case self::STEP_QUIT:
+                return $this->quit();
 
             case self::STEP_CREATE_RECORD:
                 return $this->createRecord();
@@ -103,8 +106,10 @@ class LogCircadian extends Command
                 assert($currentDaylog !== null);
                 return $this->fillInBlanks($currentDaylog);
 
-            case self::STEP_DATE_IS_SET:
-                return $this->dateIsSet();
+            case self::STEP_START_OVER:
+                $currentDaylog->delete();
+
+                return $this->createRecord();
 
             default:
                 $this->error('I did not recognize this action: "' . $action . '". Sorry :(');
@@ -285,7 +290,7 @@ class LogCircadian extends Command
                 array_unshift($options, self::STEP_FILL_IN_BLANKS);
             }
 
-            $action = $this->choice('What would you like to do?', $options, 0);
+            $action = $this->choice('What would you like to do?', $options);
 
             return $this->goToNextStep($action, $existingRecord);
         } else {
