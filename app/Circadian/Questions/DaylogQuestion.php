@@ -51,4 +51,13 @@ interface DaylogQuestion
      * @return mixed
      */
     public function normalizeAnswer(string $answer);
+
+    /**
+     * How to present answer in Table view
+     *
+     * @param mixed $answer
+     *
+     * @return string
+     */
+    public function serializeAnswer($answer): string;
 }
