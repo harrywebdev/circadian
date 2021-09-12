@@ -33,6 +33,8 @@ class LogDateQuestion implements DaylogQuestion
     {
         try {
             new CarbonImmutable($answer);
+
+            return true;
         } catch (\Exception $e) {
             throw new AnswerValidationException($e->getMessage());
         }
@@ -45,6 +47,10 @@ class LogDateQuestion implements DaylogQuestion
 
     public function serializeAnswer($answer): string
     {
+        if ($answer === null) {
+            return 'n/a';
+        }
+
         if (!($answer instanceof CarbonImmutable)) {
             $answer = new CarbonImmutable($answer);
         }

@@ -34,6 +34,10 @@ trait QuestionsTime
 
     public function serializeAnswer($answer): string
     {
+        if ($answer === null) {
+            return 'n/a';
+        }
+
         if (!($answer instanceof CarbonImmutable)) {
             $answer = new CarbonImmutable($answer);
         }
