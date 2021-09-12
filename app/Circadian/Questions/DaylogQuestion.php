@@ -40,6 +40,7 @@ interface DaylogQuestion
      * @param string $answer
      *
      * @return bool
+     * @throws AnswerValidationException
      */
     public function validateAnswer(string $answer): bool;
 
@@ -60,4 +61,11 @@ interface DaylogQuestion
      * @return string
      */
     public function serializeAnswer($answer): string;
+
+    /**
+     * Return array of possible answers (or empty if no suggestions make sense).
+     *
+     * @return array
+     */
+    public function getAnswerSuggestions(): array;
 }

@@ -4,7 +4,7 @@
 namespace App\Circadian\Questions;
 
 
-class AnySmokesQuestions extends QuestionHasCurrentDate implements DaylogQuestion
+class AnySmokesQuestions implements DaylogQuestion
 {
     use QuestionsChoice;
 

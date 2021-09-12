@@ -36,7 +36,7 @@ class LogDateQuestion implements DaylogQuestion
 
             return true;
         } catch (\Exception $e) {
-            throw new AnswerValidationException($e->getMessage());
+            throw new AnswerValidationException('I did not recognize that as a date. Please, try again.');
         }
     }
 
@@ -56,5 +56,10 @@ class LogDateQuestion implements DaylogQuestion
         }
 
         return $answer->format('j. n. Y');
+    }
+
+    public function getAnswerSuggestions(): array
+    {
+        return ['today', 'yesterday', CarbonImmutable::now()->format('Y-m-d')];
     }
 }

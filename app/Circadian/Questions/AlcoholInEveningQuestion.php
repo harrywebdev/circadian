@@ -4,7 +4,7 @@
 namespace App\Circadian\Questions;
 
 
-class AlcoholInEveningQuestion extends QuestionHasCurrentDate implements DaylogQuestion
+class AlcoholInEveningQuestion implements DaylogQuestion
 {
     use QuestionsChoice;
 

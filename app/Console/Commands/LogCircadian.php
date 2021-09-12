@@ -2,6 +2,16 @@
 
 namespace App\Console\Commands;
 
+use App\Circadian\Questions\AlcoholInEveningQuestion;
+use App\Circadian\Questions\AnswerValidationException;
+use App\Circadian\Questions\AnyAlcoholQuestion;
+use App\Circadian\Questions\AnySmokesQuestions;
+use App\Circadian\Questions\BreakfastQuestion;
+use App\Circadian\Questions\DaylogQuestion;
+use App\Circadian\Questions\DinnerQuestion;
+use App\Circadian\Questions\FallAsleepQuestion;
+use App\Circadian\Questions\LogDateQuestion;
+use App\Circadian\Questions\WakeUpQuestion;
 use App\Models\Daylog;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
@@ -29,16 +39,6 @@ class LogCircadian extends Command
     const STEP_PICK_ANOTHER_DATE = 'pick another date';
     const STEP_QUIT = 'quit';
 
-    const MODEL_FIELDS = [
-        ['field' => 'log_date', 'label' => 'Date', 'type' => 'date'],
-        ['field' => 'wake_at', 'label' => 'Woke up at', 'type' => 'time'],
-        ['field' => 'first_meal_at', 'label' => 'First meal at', 'type' => 'time'],
-        ['field' => 'last_meal_at', 'label' => 'Last meal at', 'type' => 'time'],
-        ['field' => 'sleep_at', 'label' => 'Went to bed at', 'type' => 'time'],
-        ['field' => 'has_alcohol', 'label' => 'Any alcohol', 'type' => 'boolean'],
-        ['field' => 'has_alcohol_in_evening', 'label' => 'Alcohol in the evening', 'type' => 'boolean'],
-        ['field' => 'has_smoked', 'label' => 'Any smokes', 'type' => 'boolean'],
-    ];
     /**
      * @var CarbonImmutable
      */
@@ -67,17 +67,37 @@ class LogCircadian extends Command
         $this->line('=====================');
         $this->newLine();
 
-        $date = $this->anticipate('What date you have in mind?',
-            ['today', 'yesterday', CarbonImmutable::now()->format('Y-m-d')]);
-
-        try {
-            $this->date = new CarbonImmutable($date);
-        } catch (\Exception $e) {
-            $this->error('I did not recognize that as a date. Please, try again.');
-            return $this->handle();
-        }
+        // launch the machine
+        $this->date = new CarbonImmutable($this->askQuestion(new LogDateQuestion()));
 
         return $this->goToNextStep(self::STEP_DATE_IS_SET);
+    }
+
+    /**
+     * Keeps asking given question until valid answer is provided.
+     *
+     * @param DaylogQuestion $question
+     *
+     * @return string
+     */
+    public function askQuestion(DaylogQuestion $question): string
+    {
+        $questionWording = $question->getQuestion();
+        if (!($question instanceof LogDateQuestion)) {
+            $questionWording .= ' (leave empty to skip)';
+        }
+
+        $answer = $this->anticipate($questionWording, $question->getAnswerSuggestions());
+
+        try {
+            $question->validateAnswer($answer);
+
+            return $answer;
+        } catch (AnswerValidationException $e) {
+            $this->error($e->getMessage());
+
+            return $this->askQuestion($question);
+        }
     }
 
     /**
@@ -134,37 +154,21 @@ class LogCircadian extends Command
     {
         // transform records to printable rows (of pure arrays)
         $records = collect($records)->map(function (Daylog $daylog) {
-            return collect(self::MODEL_FIELDS)->reduce(function (array $item, array $mapping) use ($daylog) {
-                $field = $daylog->{$mapping['field']};
-                switch (true) {
-                    case $field instanceof CarbonImmutable:
-                        // format time only
-                        if (preg_match('/_at$/', $mapping['field'])) {
-                            $item[$mapping['field']] = $field->format('H:i');
-                            break;
-                        }
+            return $this->getQuestionsCollection($daylog->log_date, [new LogDateQuestion()])
+                ->reduce(function (array $item, DaylogQuestion $question) use ($daylog) {
+                    $answer = $daylog->{$question->getDatabaseFieldName()};
 
-                        $item[$mapping['field']] = $field->format('j. n. Y');
-                        break;
-                    case $field === null:
-                        $item[$mapping['field']] = 'n/a';
-                        break;
-                    case gettype($field) === 'boolean':
-                        $item[$mapping['field']] = $field ? '<fg=red>yes</>' : '<fg=green>no</>';
-                        break;
-                    default:
-                        $item[$mapping['field']] = $field;
-                        break;
-                }
+                    $item[$question->getDatabaseFieldName()] = $question->serializeAnswer($answer);
 
-                return $item;
-            }, []);
+                    return $item;
+                }, []);
         });
 
         $this->table(
-            collect(array_values(self::MODEL_FIELDS))->map(function ($item) {
-                return $item['label'];
-            })->toArray(),
+            $this->getQuestionsCollection(CarbonImmutable::now(), [new LogDateQuestion()])
+                ->map(function (DaylogQuestion $question) {
+                    return $question->getLabel();
+                })->toArray(),
             $records
         );
     }
@@ -203,21 +207,26 @@ class LogCircadian extends Command
         $daylog           = new Daylog();
         $daylog->log_date = $this->date;
 
-        $questions = array_slice(self::MODEL_FIELDS, 1);
+        $questions = $this->getQuestionsCollection($daylog->log_date);
 
         $skipQuestions = [];
+        /** @var DaylogQuestion $question */
         foreach ($questions as $question) {
-            if (in_array($question['field'], $skipQuestions)) {
+            if (in_array($question->getDatabaseFieldName(), $skipQuestions)) {
                 continue;
             }
 
-            $answer = $this->ask($question['label'] . '? (leave empty to skip)');
-            if ($answer != '') {
-                $daylog->{$question['field']} = $this->transformAnswer($answer, $question);
+            $answer = $this->askQuestion($question);
 
-                // HACK: no alcohol - we don't have to ask about alcohol in the evening
-                if ($question['field'] === 'has_alcohol' && $daylog->{$question['field']} === false) {
-                    $skipQuestions[] = 'has_alcohol_in_evening';
+            if ($answer != '') {
+                $daylog->{$question->getDatabaseFieldName()} = $question->normalizeAnswer($answer);
+
+                // HACK: no alcohol - we don't have to ask about alcohol in the evening, we set it to false right away
+                if ($question instanceof AnyAlcoholQuestion && $daylog->{$question->getDatabaseFieldName()} === false) {
+                    $alcoholInEveningQuestion                                    = new AlcoholInEveningQuestion();
+                    $daylog->{$alcoholInEveningQuestion->getDatabaseFieldName()} = false;
+                    $skipQuestions[]                                             =
+                        $alcoholInEveningQuestion->getDatabaseFieldName();
                 }
             }
         }
@@ -262,16 +271,17 @@ class LogCircadian extends Command
     {
         $daylog = $currentDaylog;
 
-        $questions = array_slice(self::MODEL_FIELDS, 1);
+        $questions = $this->getQuestionsCollection($currentDaylog->log_date);
 
+        /** @var DaylogQuestion $question */
         foreach ($questions as $question) {
-            if ($daylog->{$question['field']} !== null) {
+            if ($daylog->{$question->getDatabaseFieldName()} !== null) {
                 continue;
             }
 
-            $answer = $this->ask($question['label'] . '? (leave empty to skip)');
+            $answer = $this->askQuestion($question);
             if ($answer != '') {
-                $daylog->{$question['field']} = $this->transformAnswer($answer, $question);
+                $daylog->{$question->getDatabaseFieldName()} = $question->normalizeAnswer($answer);
             }
         }
 
@@ -310,5 +320,18 @@ class LogCircadian extends Command
 
             return $this->goToNextStep($action);
         }
+    }
+
+    private function getQuestionsCollection(CarbonImmutable $currentDate, array $prependQuestions = [])
+    {
+        return collect(array_merge($prependQuestions, [
+            new WakeUpQuestion($currentDate),
+            new BreakfastQuestion($currentDate),
+            new DinnerQuestion($currentDate),
+            new FallAsleepQuestion($currentDate),
+            new AnyAlcoholQuestion(),
+            new AlcoholInEveningQuestion(),
+            new AnySmokesQuestions(),
+        ]));
     }
 }

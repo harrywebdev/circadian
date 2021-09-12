@@ -18,6 +18,8 @@ trait QuestionsChoice
         if (!preg_match('/yes|y|no|n/i', $answer)) {
             throw new AnswerValidationException('Invalid choice format, expecting "yes" ("y") or "no" ("n")');
         }
+
+        return true;
     }
 
     public function normalizeAnswer(string $answer)
@@ -32,5 +34,10 @@ trait QuestionsChoice
         }
 
         return $answer ? 'yes' : 'no';
+    }
+
+    public function getAnswerSuggestions(): array
+    {
+        return ['yes', 'no'];
     }
 }
