@@ -13,8 +13,12 @@ trait QuestionsChoice
         return QuestionType::BOOLEAN();
     }
 
-    public function validateAnswer(string $answer): bool
+    public function validateAnswer(string $answer = null): bool
     {
+        if ($answer === null) {
+            return true;
+        }
+
         if (!preg_match('/yes|y|no|n/i', $answer)) {
             throw new AnswerValidationException('Invalid choice format, expecting "yes" ("y") or "no" ("n")');
         }
@@ -22,7 +26,7 @@ trait QuestionsChoice
         return true;
     }
 
-    public function normalizeAnswer(string $answer)
+    public function normalizeAnswer(string $answer = null)
     {
         return preg_match('/yes|y/i', $answer) ? true : (preg_match('/no|n/i', $answer) ? false : null);
     }

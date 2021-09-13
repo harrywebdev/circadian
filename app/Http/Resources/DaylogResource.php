@@ -17,6 +17,7 @@ class DaylogResource extends JsonResource
     {
         return [
             'id'                     => $this->id,
+            'is_complete'            => $this->is_complete,
             'log_date'               => $this->log_date,
             'has_alcohol'            => $this->has_alcohol,
             'has_alcohol_in_evening' => $this->has_alcohol_in_evening,

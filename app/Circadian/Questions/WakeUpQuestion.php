@@ -23,7 +23,7 @@ class WakeUpQuestion extends QuestionHasCurrentDate implements DaylogQuestion
         return 'What time did you wake up?';
     }
 
-    public function normalizeAnswer(string $answer)
+    public function normalizeAnswer(string $answer = null)
     {
         return $this->normalizeAnswerWithCurrentDate($answer, $this->currentDate);
     }

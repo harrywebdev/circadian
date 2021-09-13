@@ -13,8 +13,12 @@ trait QuestionsTime
         return QuestionType::TIME();
     }
 
-    public function validateAnswer(string $answer): bool
+    public function validateAnswer(string $answer = null): bool
     {
+        if ($answer === null) {
+            return true;
+        }
+
         if (!preg_match('/([0-9]{1,2}):([0-9]{1,2})/', $answer, $matches)) {
             throw new AnswerValidationException('Invalid time format, expecting HH:MM');
         }
@@ -22,8 +26,12 @@ trait QuestionsTime
         return true;
     }
 
-    public function normalizeAnswerWithCurrentDate(string $answer, CarbonImmutable $currentDate)
+    public function normalizeAnswerWithCurrentDate(string $answer = null, CarbonImmutable $currentDate)
     {
+        if ($answer === null) {
+            return null;
+        }
+
         preg_match('/([0-9]{1,2}):([0-9]{1,2})/', $answer, $matches);
 
         return $currentDate->clone()
