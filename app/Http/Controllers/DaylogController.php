@@ -71,11 +71,26 @@ class DaylogController extends Controller
      * @param \Illuminate\Http\Request $request
      * @param int                      $id
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, $id)
     {
-        //
+        $data = $request->validate([
+            'has_alcohol'            => ['sometimes', 'nullable', 'string'],
+            'has_alcohol_in_evening' => ['sometimes', 'nullable', 'string'],
+            'has_smoked'             => ['sometimes', 'nullable', 'string'],
+            'wake_at'                => ['sometimes', 'nullable', 'date_format:H:i'],
+            'first_meal_at'          => ['sometimes', 'nullable', 'date_format:H:i'],
+            'last_meal_at'           => ['sometimes', 'nullable', 'date_format:H:i'],
+            'sleep_at'               => ['sometimes', 'nullable', 'date_format:H:i'],
+        ]);
+
+        $daylog = Daylog::findOrFail($id);
+
+        $daylog->fillAnswers($data)
+            ->save();
+
+        return response()->json(['daylog' => new DaylogResource($daylog)]);
     }
 
     /**

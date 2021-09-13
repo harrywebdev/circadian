@@ -18,4 +18,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::apiResource('daylogs', \App\Http\Controllers\DaylogController::class)->only(['index']);
+Route::apiResource('daylogs', \App\Http\Controllers\DaylogController::class)->only(['index', 'update']);
