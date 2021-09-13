@@ -6,6 +6,7 @@ use App\Http\Resources\DaylogResource;
 use App\Models\Daylog;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Validator;
 
 class DaylogController extends Controller
@@ -46,11 +47,30 @@ class DaylogController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'log_date'               => ['required', 'date'],
+            'has_alcohol'            => ['sometimes', 'nullable', 'string'],
+            'has_alcohol_in_evening' => ['sometimes', 'nullable', 'string'],
+            'has_smoked'             => ['sometimes', 'nullable', 'string'],
+            'wake_at'                => ['sometimes', 'nullable', 'date_format:H:i'],
+            'first_meal_at'          => ['sometimes', 'nullable', 'date_format:H:i'],
+            'last_meal_at'           => ['sometimes', 'nullable', 'date_format:H:i'],
+            'sleep_at'               => ['sometimes', 'nullable', 'date_format:H:i'],
+        ]);
+
+        $daylog = new Daylog();
+
+        $daylog->log_date = new CarbonImmutable($data['log_date']);
+        unset($data['log_date']);
+
+        $daylog->fillAnswers($data)
+            ->save();
+
+        return response()->json(['daylog' => new DaylogResource($daylog)]);
     }
 
     /**
