@@ -78,9 +78,9 @@ class LogCircadian extends Command
      *
      * @param DaylogQuestion $question
      *
-     * @return string
+     * @return string|null
      */
-    public function askQuestion(DaylogQuestion $question): string
+    public function askQuestion(DaylogQuestion $question)
     {
         $questionWording = $question->getQuestion();
         if (!($question instanceof LogDateQuestion)) {
