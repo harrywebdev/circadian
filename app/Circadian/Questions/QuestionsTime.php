@@ -32,12 +32,9 @@ trait QuestionsTime
             return null;
         }
 
-        preg_match('/([0-9]{1,2}):([0-9]{1,2})/', $answer, $matches);
+        $answerDate = new CarbonImmutable($answer);
 
-        return $currentDate->clone()
-            ->setHours($matches[1])
-            ->setMinutes($matches[2])
-            ->setSeconds(0)
+        return $answerDate->utc()->setSeconds(0)
             ->setMicroseconds(0)
             ->toDateTimeString();
     }

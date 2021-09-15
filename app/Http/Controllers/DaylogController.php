@@ -55,10 +55,10 @@ class DaylogController extends Controller
             'has_alcohol'            => ['sometimes', 'nullable', 'boolean'],
             'has_alcohol_in_evening' => ['sometimes', 'nullable', 'boolean'],
             'has_smoked'             => ['sometimes', 'nullable', 'boolean'],
-            'wake_at'                => ['sometimes', 'nullable', 'date_format:H:i'],
-            'first_meal_at'          => ['sometimes', 'nullable', 'date_format:H:i'],
-            'last_meal_at'           => ['sometimes', 'nullable', 'date_format:H:i'],
-            'sleep_at'               => ['sometimes', 'nullable', 'date_format:H:i'],
+            'wake_at'                => ['sometimes', 'nullable', 'date_format:Y-m-d\TH:i:sP'],
+            'first_meal_at'          => ['sometimes', 'nullable', 'date_format:Y-m-d\TH:i:sP'],
+            'last_meal_at'           => ['sometimes', 'nullable', 'date_format:Y-m-d\TH:i:sP'],
+            'sleep_at'               => ['sometimes', 'nullable', 'date_format:Y-m-d\TH:i:sP'],
         ]);
 
         $daylog = new Daylog();
@@ -107,13 +107,13 @@ class DaylogController extends Controller
     public function update(Request $request, $id)
     {
         $data = $request->validate([
-            'has_alcohol'            => ['sometimes', 'nullable', 'string'],
-            'has_alcohol_in_evening' => ['sometimes', 'nullable', 'string'],
-            'has_smoked'             => ['sometimes', 'nullable', 'string'],
-            'wake_at'                => ['sometimes', 'nullable', 'date_format:H:i'],
-            'first_meal_at'          => ['sometimes', 'nullable', 'date_format:H:i'],
-            'last_meal_at'           => ['sometimes', 'nullable', 'date_format:H:i'],
-            'sleep_at'               => ['sometimes', 'nullable', 'date_format:H:i'],
+            'has_alcohol'            => ['sometimes', 'nullable', 'boolean'],
+            'has_alcohol_in_evening' => ['sometimes', 'nullable', 'boolean'],
+            'has_smoked'             => ['sometimes', 'nullable', 'boolean'],
+            'wake_at'                => ['sometimes', 'nullable', 'date_format:Y-m-d\TH:i:sP'],
+            'first_meal_at'          => ['sometimes', 'nullable', 'date_format:Y-m-d\TH:i:sP'],
+            'last_meal_at'           => ['sometimes', 'nullable', 'date_format:Y-m-d\TH:i:sP'],
+            'sleep_at'               => ['sometimes', 'nullable', 'date_format:Y-m-d\TH:i:sP'],
         ]);
 
         $daylog = Daylog::findOrFail($id);
