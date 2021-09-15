@@ -23,7 +23,7 @@ class DinnerQuestion extends QuestionHasCurrentDate implements DaylogQuestion
         return 'What time did you have your *last* bite or sip?';
     }
 
-    public function normalizeAnswer(string $answer = null)
+    public function normalizeAnswer($answer = null)
     {
         return $this->normalizeAnswerWithCurrentDate($answer, $this->currentDate);
     }

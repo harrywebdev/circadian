@@ -67,6 +67,11 @@ class DaylogController extends Controller
         $daylog->log_date = new CarbonImmutable($data['log_date']);
         unset($data['log_date']);
 
+        // check whether record for this date already exists
+        if (Daylog::where('log_date', $daylog->log_date)->count() > 0) {
+            abort(409, 'Daylog with this date already exists.');
+        }
+
         $daylog->fillAnswers($data)
             ->save();
 

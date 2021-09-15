@@ -23,7 +23,7 @@ class FallAsleepQuestion extends QuestionHasCurrentDate implements DaylogQuestio
         return 'What time did you fall asleep?';
     }
 
-    public function normalizeAnswer(string $answer = null)
+    public function normalizeAnswer($answer = null)
     {
         return $this->normalizeAnswerWithCurrentDate($answer, $this->currentDate);
     }

@@ -26,8 +26,12 @@ trait QuestionsChoice
         return true;
     }
 
-    public function normalizeAnswer(string $answer = null)
+    public function normalizeAnswer($answer = null)
     {
+        if (is_bool($answer)) {
+            return $answer;
+        }
+        
         return preg_match('/yes|y/i', $answer) ? true : (preg_match('/no|n/i', $answer) ? false : null);
     }
 

@@ -47,11 +47,11 @@ interface DaylogQuestion
     /**
      * Normalizes input for storage
      *
-     * @param string $answer
+     * @param mixed $answer
      *
      * @return mixed
      */
-    public function normalizeAnswer(string $answer);
+    public function normalizeAnswer($answer);
 
     /**
      * How to present answer in Table view

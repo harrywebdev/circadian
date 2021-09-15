@@ -40,7 +40,7 @@ class LogDateQuestion implements DaylogQuestion
         }
     }
 
-    public function normalizeAnswer(string $answer)
+    public function normalizeAnswer($answer)
     {
         return (new CarbonImmutable($answer))->format('Y-m-d');
     }
