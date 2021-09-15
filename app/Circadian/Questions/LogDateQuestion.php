@@ -29,7 +29,7 @@ class LogDateQuestion implements DaylogQuestion
         return QuestionType::DATE();
     }
 
-    public function validateAnswer(string $answer): bool
+    public function validateAnswer($answer): bool
     {
         try {
             new CarbonImmutable($answer);

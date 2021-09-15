@@ -53,9 +53,9 @@ class DaylogController extends Controller
     {
         $data = $request->validate([
             'log_date'               => ['required', 'date'],
-            'has_alcohol'            => ['sometimes', 'nullable', 'string'],
-            'has_alcohol_in_evening' => ['sometimes', 'nullable', 'string'],
-            'has_smoked'             => ['sometimes', 'nullable', 'string'],
+            'has_alcohol'            => ['sometimes', 'nullable', 'boolean'],
+            'has_alcohol_in_evening' => ['sometimes', 'nullable', 'boolean'],
+            'has_smoked'             => ['sometimes', 'nullable', 'boolean'],
             'wake_at'                => ['sometimes', 'nullable', 'date_format:H:i'],
             'first_meal_at'          => ['sometimes', 'nullable', 'date_format:H:i'],
             'last_meal_at'           => ['sometimes', 'nullable', 'date_format:H:i'],

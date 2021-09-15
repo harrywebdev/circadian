@@ -13,9 +13,9 @@ trait QuestionsChoice
         return QuestionType::BOOLEAN();
     }
 
-    public function validateAnswer(string $answer = null): bool
+    public function validateAnswer($answer = null): bool
     {
-        if ($answer === null) {
+        if ($answer === null || is_bool($answer)) {
             return true;
         }
 

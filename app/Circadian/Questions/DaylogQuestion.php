@@ -37,12 +37,12 @@ interface DaylogQuestion
     /**
      * Determines whether given answer is valid
      *
-     * @param string $answer
+     * @param mixed $answer
      *
      * @return bool
      * @throws AnswerValidationException
      */
-    public function validateAnswer(string $answer): bool;
+    public function validateAnswer($answer): bool;
 
     /**
      * Normalizes input for storage

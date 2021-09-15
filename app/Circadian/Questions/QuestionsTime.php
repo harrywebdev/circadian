@@ -13,7 +13,7 @@ trait QuestionsTime
         return QuestionType::TIME();
     }
 
-    public function validateAnswer(string $answer = null): bool
+    public function validateAnswer($answer = null): bool
     {
         if ($answer === null) {
             return true;
