@@ -20,3 +20,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::apiResource('daylogs', \App\Http\Controllers\DaylogController::class)
     ->only(['index', 'store', 'update']);
+
+Route::get('daylogs/{date}', [\App\Http\Controllers\DaylogController::class, 'show'])->name('daylogs.show');

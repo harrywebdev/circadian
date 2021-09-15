@@ -31,7 +31,7 @@ trait QuestionsChoice
         if (is_bool($answer)) {
             return $answer;
         }
-        
+
         return preg_match('/yes|y/i', $answer) ? true : (preg_match('/no|n/i', $answer) ? false : null);
     }
 

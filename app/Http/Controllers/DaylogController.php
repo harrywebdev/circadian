@@ -6,7 +6,6 @@ use App\Http\Resources\DaylogResource;
 use App\Models\Daylog;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Validator;
 
 class DaylogController extends Controller
@@ -35,8 +34,8 @@ class DaylogController extends Controller
             abort(400, 'Period not within 31 days.');
         }
 
-        $daylogs = Daylog::where('log_date', '>=', $from->format('Y-m-d'))
-            ->where('log_date', '<=', $to->format('Y-m-d'))
+        $daylogs = Daylog::where('log_date', '>=', $from)
+            ->where('log_date', '<=', $to)
             ->get();
 
         return response()->json(['daylogs' => DaylogResource::collection($daylogs)]);
@@ -81,13 +80,20 @@ class DaylogController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param int $id
-     *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function show($id)
+    public function show(Request $request, string $date)
     {
-        //
+        $validator = Validator::make(['date' => $date], [
+            'date' => 'required|date',
+        ]);
+
+        $data = $validator->validated();
+
+        $date   = new CarbonImmutable($data['date']);
+        $daylog = Daylog::where('log_date', $date)->firstOrFail();
+
+        return response()->json(['daylog' => new DaylogResource($daylog)]);
     }
 
     /**
